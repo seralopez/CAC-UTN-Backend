@@ -22,12 +22,6 @@ const sequelize = new Sequelize(process.env.DB, process.env.DB_USER, process.env
     }
 } */
 
-app.get('/api/notes', async (req, res) => {
-    const notes = await sequelize.query("SELECT * FROM TOU11",
-        { type: QueryTypes.SELECT })
-    res.json(notes)
-})
-
 function badRequest(err, req, res, next) {
     res.status(404)
     res.json({ message: err })
@@ -40,15 +34,39 @@ async function rol_agregar(req, res, next) {
     const check = sql_select(`rol_nombre`, `tbl_rol`, `rol_nombre`, `${nombre}`)
     check.then(val => {
         if (val) {
-            res.json({ msg: `Rol no ` })
+            const sql_insert_resultado = sql_select(`rol_nombre`, `tbl_rol`, `rol_nombre`, `${nombre}`)
+            res.json({ msg: sql_insert_resultado })
         } else {
             next(`Rol ${nombre} ya existe.`)
         }
     })
-    /* const nombre = sequelize.query(`INSERT INTO tbl_rol SET rol_nombre = ${nombre}`,
-        { type: QueryTypes.SELECT }) 
-    res.json({ msg: check }) */
 }
+
+// ==================================== SQL INSERT ================================================
+async function sql_insert(columna_dato, tabla_nombre, columna_nombre, valor) {
+    /*const resultado = await sequelize.query(`INSERT INTO ${columna_dato} FROM ${tabla_nombre} where ${columna_nombre} = "${valor}";`,
+        { type: QueryTypes.SELECT })
+    if (resultado.length <= 0) {
+        return true
+    } else {
+        return false
+    }
+    */
+
+    const Rol = sequelize.define('Rol', {
+        RolNombre: {
+            type: DataTypes.STRING,
+        }
+    });
+
+    (async () => {
+        await sequelize.sync();
+        const [results, metadata] = await sequelize.query(`INSERT INTO ${tabla_nombre} (${columna_nombre}) VALUES ('${valor}')`);
+        console.log(results);
+        return results
+    })();
+}
+
 // ==================================== SQL SELECT ================================================
 async function sql_select(columna_dato, tabla_nombre, columna_nombre, valor) {
     const resultado = await sequelize.query(`SELECT ${columna_dato} FROM ${tabla_nombre} where ${columna_nombre} = "${valor}";`,
@@ -60,5 +78,21 @@ async function sql_select(columna_dato, tabla_nombre, columna_nombre, valor) {
     }
 }
 
+// ==================================== USUARIO AGREGAR ===========================================
+app.post("/usuario/agregar", rol_agregar, badRequest)
+async function rol_agregar(req, res, next) {
+    nombre = req.body.nombre
+    const check = sql_select(`rol_nombre`, `tbl_rol`, `rol_nombre`, `${nombre}`)
+    check.then(val => {
+        if (val) {
+            const sql_insert_resultado = sql_select(`rol_nombre`, `tbl_rol`, `rol_nombre`, `${nombre}`)
+            res.json({ msg: sql_insert_resultado })
+        } else {
+            next(`Rol ${nombre} ya existe.`)
+        }
+    })
+}
+
+// ==================================== INICIO SERVIDOR ===========================================
 const PORT = process.env.DB_PORT
 app.listen(PORT, () => { console.log(`<  < - Servidor iniciado en ${PORT} - >  >`) })
