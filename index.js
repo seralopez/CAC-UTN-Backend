@@ -32,6 +32,33 @@ async function datos_agregar(req, res, next) {
                 res.json({ msg: `Datos guardados con el ID : ${valor}` })
             })
         } else {
+            next(`Usuario ${nombre} no existe.`)
+        }
+    })
+}
+// ==================================== DATOS MODIFICAR ===========================================
+app.post("/datos/modificar", datos_modificar, badRequest)
+async function datos_modificar(req, res, next) {
+    usr_id = req.body.id
+    telefono = req.body.telefono
+    pais = req.body.pais
+    provincia = req.body.provincia
+    localidad = req.body.localidad
+    calle = req.body.calle
+    disponibilidad = req.body.disponibilidad
+    servicios = req.body.servicios
+    tabla_nombre = 'tbl_datos'
+
+    const check = sql_select(`usuario_id`, `tbl_usuarios`, `usuario_id`, usr_id)
+    check.then(val => {
+        if (!val) {
+            columna_nombre = 'datos_telefono,datos_pais,datos_provincia,datos_localidad,datos_calle,datos_disponibilidad,datos_servicios'
+            datos_sql = `${telefono}, ${pais}, ${provincia}, ${localidad}, '${calle}', '${disponibilidad}', ${servicios}`
+            const sql_insert_resultado = sql_insert(tabla_nombre, columna_nombre, datos_sql)
+            sql_insert_resultado.then(valor => {
+                res.json({ msg: `Datos guardados con el ID : ${valor}` })
+            })
+        } else {
             next(`Rol ${nombre} ya existe.`)
         }
     })
@@ -107,6 +134,12 @@ async function sql_select(columna_dato, tabla_nombre, columna_nombre, valor) {
     } else {
         return false
     }
+}
+// ==================================== SQL UPDATE ================================================
+async function sql_update(tabla_nombre, columna_nombre, valor) {
+    const [resul, meta] = await sequelize.query(`INSERT INTO ${tabla_nombre} (${columna_nombre}) VALUES (${valor})`,
+        { type: QueryTypes.INSERT })
+    return resul
 }
 // ==================================== USUARIO AGREGAR ===========================================
 app.post("/usuario/agregar", usuario_agregar, badRequest)
