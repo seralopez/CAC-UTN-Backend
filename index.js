@@ -52,14 +52,22 @@ async function datos_modificar(req, res, next) {
     const check = sql_select(`usuario_id`, `tbl_usuarios`, `usuario_id`, usr_id)
     check.then(val => {
         if (!val) {
-            columna_nombre = 'datos_telefono,datos_pais,datos_provincia,datos_localidad,datos_calle,datos_disponibilidad,datos_servicios'
-            datos_sql = `${telefono}, ${pais}, ${provincia}, ${localidad}, '${calle}', '${disponibilidad}', ${servicios}`
-            const sql_insert_resultado = sql_insert(tabla_nombre, columna_nombre, datos_sql)
-            sql_insert_resultado.then(valor => {
-                res.json({ msg: `Datos guardados con el ID : ${valor}` })
+            const resultado = sql_result(`tbl_usuarios`, `usuario_id`, usr_id)
+            resultado.then(val => {
+                columna_nombre = `SET datos_telefono = '${nombre}', datos_pais = '${apellido}',`
+                columna_nombre += `datos_provincia = '${pass}', datos_localidad = '${correo}',`
+                columna_nombre += `datos_calle = ${rol} , datos_gps = '${correo}',`
+                columna_nombre += `datos_disponibilidad = ${rol} , datos_servicios = '${correo}'`
+                sql_where = `usuario_id = ${usr_id}`
+                const sql_insert_resultado = sql_update('tbl_usuarios', columna_nombre, sql_where)
+                sql_insert_resultado.then(valor => {
+                    res.json({ msg: `Usuario modificado correctamente.` })
+                })
+                console.log(val[0]['usuario_datos'])
+                res.json({ msg: val })
             })
         } else {
-            next(`Rol ${nombre} ya existe.`)
+            next(`Usuario ${usr_id} no existe.`)
         }
     })
 }
@@ -135,10 +143,20 @@ async function sql_select(columna_dato, tabla_nombre, columna_nombre, valor) {
         return false
     }
 }
+// ==================================== SQL SELECT * ================================================
+async function sql_result(tabla_nombre, columna_nombre, valor) {
+    const resultado = await sequelize.query(`SELECT * FROM ${tabla_nombre} where ${columna_nombre} = ${valor};`,
+        { type: QueryTypes.SELECT })
+    if (resultado.length == 0) {
+        return false
+    } else {
+        return resultado
+    }
+}
 // ==================================== SQL UPDATE ================================================
 async function sql_update(tabla_nombre, columna_nombre, valor) {
-    const [resul, meta] = await sequelize.query(`INSERT INTO ${tabla_nombre} (${columna_nombre}) VALUES (${valor})`,
-        { type: QueryTypes.INSERT })
+    const [resul, meta] = await sequelize.query(`UPDATE ${tabla_nombre} ${columna_nombre} WHERE ${valor}`,
+        { type: QueryTypes.UPDATE })
     return resul
 }
 // ==================================== USUARIO AGREGAR ===========================================
@@ -162,6 +180,32 @@ async function usuario_agregar(req, res, next) {
             })
         } else {
             next(`Usuario ${correo} ya registrado.`)
+        }
+    })
+}
+// ==================================== USUARIO MODIFICAR =========================================
+app.post("/usuario/modificar", usuario_modificar, badRequest)
+async function usuario_modificar(req, res, next) {
+    usr_id = req.body.id
+    nombre = req.body.nombre
+    apellido = req.body.apellido
+    pass = req.body.pass
+    correo = req.body.correo
+    rol = req.body.rol
+
+    const check = sql_select(`usuario_id`, `tbl_usuarios`, `usuario_id`, usr_id)
+    check.then(val => {
+        if (!val) {
+            columna_nombre = `SET usuario_nombre = '${nombre}', usuario_apellido = '${apellido}',`
+            columna_nombre += `usuario_pass = '${pass}', usuario_correo = '${correo}',`
+            columna_nombre += ` usuario_rol = ${rol} `
+            sql_where = `usuario_id = ${usr_id}`
+            const sql_insert_resultado = sql_update('tbl_usuarios', columna_nombre, sql_where)
+            sql_insert_resultado.then(valor => {
+                res.json({ msg: `Usuario modificado correctamente.` })
+            })
+        } else {
+            next(`Usuario ${correo} no existe.`)
         }
     })
 }
