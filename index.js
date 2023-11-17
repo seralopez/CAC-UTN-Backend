@@ -45,6 +45,7 @@ async function datos_modificar(req, res, next) {
     provincia = req.body.provincia
     localidad = req.body.localidad
     calle = req.body.calle
+    gps = req.body.gps
     disponibilidad = req.body.disponibilidad
     servicios = req.body.servicios
     tabla_nombre = 'tbl_datos'
@@ -54,17 +55,15 @@ async function datos_modificar(req, res, next) {
         if (!val) {
             const resultado = sql_result(`tbl_usuarios`, `usuario_id`, usr_id)
             resultado.then(val => {
-                columna_nombre = `SET datos_telefono = '${nombre}', datos_pais = '${apellido}',`
-                columna_nombre += `datos_provincia = '${pass}', datos_localidad = '${correo}',`
-                columna_nombre += `datos_calle = ${rol} , datos_gps = '${correo}',`
-                columna_nombre += `datos_disponibilidad = ${rol} , datos_servicios = '${correo}'`
-                sql_where = `usuario_id = ${usr_id}`
-                const sql_insert_resultado = sql_update('tbl_usuarios', columna_nombre, sql_where)
+                columna_nombre = `SET datos_telefono = ${telefono}, datos_pais = ${pais},`
+                columna_nombre += `datos_provincia = ${provincia}, datos_localidad = ${localidad},`
+                columna_nombre += `datos_calle = '${calle}' , datos_gps = '${gps}',`
+                columna_nombre += `datos_disponibilidad = '${disponibilidad}' , datos_servicios = ${servicios}`
+                sql_where = `datos_id = ${val[0]['usuario_datos']}`
+                const sql_insert_resultado = sql_update(tabla_nombre, columna_nombre, sql_where)
                 sql_insert_resultado.then(valor => {
-                    res.json({ msg: `Usuario modificado correctamente.` })
+                    res.json({ msg: `Datos modificados correctamente.` })
                 })
-                console.log(val[0]['usuario_datos'])
-                res.json({ msg: val })
             })
         } else {
             next(`Usuario ${usr_id} no existe.`)
