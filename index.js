@@ -158,6 +158,29 @@ async function sql_update(tabla_nombre, columna_nombre, valor) {
         { type: QueryTypes.UPDATE })
     return resul
 }
+// ==================================== PRESTADOR * ===========================================++++
+app.post("/prestadores/", prestadores_ver, badRequest)
+async function prestadores_ver(req, res, next) {
+    rol = req.body.rol
+    tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
+    columna_nombre = `tbl_servicios.servicios_nombre`
+    const check = sql_result(tabla_nombre, columna_nombre, `"${rol}"`)
+    //const resultado = await sequelize.query(`SELECT * from  WHERE tbl_servicios.servicios_nombre = "${rol}";`,
+    //  { type: QueryTypes.SELECT })
+    check.then(val => {
+        if (val) {
+            /*columna_nombre = 'usuario_nombre,usuario_apellido,usuario_pass,usuario_correo,usuario_datos,usuario_rol'
+            datos_sql = `'${nombre}', '${apellido}', '${pass}', '${correo}', ${datos_usr}, ${rol}`
+            const sql_insert_resultado = sql_insert('tbl_usuarios', columna_nombre, datos_sql)
+            sql_insert_resultado.then(valor => {
+                res.json({ msg: `Usuario guardado con el ID : ${valor}` })
+            }) */
+            res.json({ msg: val })
+        } else {
+            next(`No se encontro prestador.`)
+        }
+    })
+}
 // ==================================== USUARIO AGREGAR ===========================================
 app.post("/usuario/agregar", usuario_agregar, badRequest)
 async function usuario_agregar(req, res, next) {
