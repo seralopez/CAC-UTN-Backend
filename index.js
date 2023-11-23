@@ -164,7 +164,7 @@ async function sql_update(tabla_nombre, columna_nombre, valor) {
 // ==================================== PRESTADOR * ===========================================++++
 app.get("/prestadores/:dato/:valor", prestadores_ver, badRequest)
 async function prestadores_ver(req, res, next) {
-    valor = req.params.valor
+    valor = `'${req.params.valor}'`
     dato = req.params.dato
     tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
     tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
@@ -173,12 +173,16 @@ async function prestadores_ver(req, res, next) {
         case "prestador":
             columna_nombre = `tbl_servicios.servicios_nombre`
             break;
+        case "horario":
+            columna_nombre = `tbl_datos.datos_disponibilidad`
+            break;
         case "calificacion":
+            valor = req.params.valor
             columna_nombre = `tbl_datos.datos_calificacion`
             break;
     }
     //columna_nombre = `tbl_servicios.servicios_nombre`
-    const check = sql_result(tabla_nombre, columna_nombre, `"${valor}"`)
+    const check = sql_result(tabla_nombre, columna_nombre, valor)
     check.then(val => {
         if (val) {
             const a = { latitude: -34.70207407721391, longitude: -58.371419282884325 }
