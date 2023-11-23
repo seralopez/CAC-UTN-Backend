@@ -162,14 +162,23 @@ async function sql_update(tabla_nombre, columna_nombre, valor) {
     return resul
 }
 // ==================================== PRESTADOR * ===========================================++++
-app.get("/prestadores/:rol", prestadores_ver, badRequest)
+app.get("/prestadores/:dato/:valor", prestadores_ver, badRequest)
 async function prestadores_ver(req, res, next) {
-    rol = req.params.rol
+    valor = req.params.valor
+    dato = req.params.dato
     tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
     tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
-    columna_nombre = `tbl_servicios.servicios_nombre`
-    //const check = sql_result(tabla_nombre, columna_nombre, `"${rol}"`)
-    const check = sql_result(tabla_nombre, columna_nombre, `"${rol}"`)
+
+    switch (dato) {
+        case "prestador":
+            columna_nombre = `tbl_servicios.servicios_nombre`
+            break;
+        case "calificacion":
+            columna_nombre = `tbl_datos.datos_calificacion`
+            break;
+    }
+    //columna_nombre = `tbl_servicios.servicios_nombre`
+    const check = sql_result(tabla_nombre, columna_nombre, `"${valor}"`)
     check.then(val => {
         if (val) {
             const a = { latitude: -34.70207407721391, longitude: -58.371419282884325 }
