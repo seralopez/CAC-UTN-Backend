@@ -161,7 +161,23 @@ async function sql_update(tabla_nombre, columna_nombre, valor) {
         { type: QueryTypes.UPDATE })
     return resul
 }
-// ==================================== PRESTADOR * ===========================================++++
+// ==================================== PERFIL ID =================================================
+app.get("/perfil/:valor", perfil_id, badRequest)
+async function perfil_id(req, res, next) {
+    valor = req.params.valor
+    tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
+    tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
+    const check = sql_result(tabla_nombre, 'usuario_id', `${valor}`)
+    check.then(val => {
+        if (val) {
+            delete val['usuario_pass']
+            res.json(val)
+        } else {
+            next(`Servicio ${nombre} ya existe.`)
+        }
+    })
+}
+// ==================================== PRESTADOR * ===============================================
 app.get("/prestadores/:dato/:valor", prestadores_ver, badRequest)
 async function prestadores_ver(req, res, next) {
     valor = `'${req.params.valor}'`
@@ -187,35 +203,15 @@ async function prestadores_ver(req, res, next) {
         if (val) {
             const a = { latitude: -34.70207407721391, longitude: -58.371419282884325 }
             let datos = []
-
             val.forEach(element => {
+                delete element['usuario_pass']
                 const gps = element.datos_gps.split(',')
                 const b = { latitude: gps[0], longitude: gps[1] }
                 const distancia = ((haversine(a, b)) / 1000).toString().slice(0, 4)
-                datos.push({
-                    usuario_id: element.usuario_id,
-                    usuario_nombre: element.usuario_nombre,
-                    usuario_apellido: element.usuario_apellido,
-                    usuario_correo: element.usuario_correo,
-                    usuario_ultConec: element.usuario_ultConec,
-                    usuario_foto: element.usuario_foto,
-                    usuario_rol: element.usuario_rol,
-                    servicios_usuario: element.servicios_usuario,
-                    servicios_nombre: element.servicios_nombre,
-                    servicios_matricula: element.servicios_matricula,
-                    datos_id: element.datos_id,
-                    datos_telefono: element.datos_telefono,
-                    datos_pais: element.datos_pais,
-                    datos_provincia: element.datos_provincia,
-                    datos_localidad: element.datos_localidad,
-                    datos_calle: element.datos_calle,
-                    datos_gps: distancia,
-                    datos_disponibilidad: element.datos_disponibilidad,
-                    datos_servicios: element.datos_servicios,
-                    datos_calificacion: element.datos_calificacion
-                })
+                element.datos_gps = distancia
+
             });
-            res.json(datos)
+            res.json(val)
         } else {
             next(`No se encontro prestador.`)
         }
