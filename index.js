@@ -197,7 +197,7 @@ async function prestadores_ver(req, res, next) {
             columna_nombre = `tbl_datos.datos_calificacion`
             break;
     }
-    //columna_nombre = `tbl_servicios.servicios_nombre`
+    valor += ` ORDER BY datos_calificacion DESC`
     const check = sql_result(tabla_nombre, columna_nombre, valor)
     check.then(val => {
         if (val) {
