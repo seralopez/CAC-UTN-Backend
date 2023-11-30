@@ -135,6 +135,17 @@ async function sql_insert(tabla_nombre, columna_nombre, valor) {
         { type: QueryTypes.INSERT })
     return resul
 }
+
+// ==================================== SQL LIKE ================================================
+async function sql_like(tabla_nombre, columna_nombre, valor) {
+    const resultado = await sequelize.query(`SELECT * FROM ${tabla_nombre} where ${columna_nombre} LIKE ${valor};`,
+        { type: QueryTypes.SELECT })
+    if (resultado.length == 0) {
+        return false
+    } else {
+        return resultado
+    }
+}
 // ==================================== SQL SELECT ================================================
 async function sql_select(columna_dato, tabla_nombre, columna_nombre, valor) {
     const resultado = await sequelize.query(`SELECT ${columna_dato} FROM ${tabla_nombre} where ${columna_nombre} = ${valor};`,
@@ -184,9 +195,8 @@ async function prestadores_ver(req, res, next) {
     dato = req.params.dato
     tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
     tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
-
     switch (dato) {
-        case "prestador":
+        case "prestador", "buscador":
             columna_nombre = `tbl_servicios.servicios_nombre`
             break;
         case "horario":
@@ -197,9 +207,18 @@ async function prestadores_ver(req, res, next) {
             columna_nombre = `tbl_datos.datos_calificacion`
             break;
     }
-    valor += ` ORDER BY datos_calificacion DESC`
-    const check = sql_result(tabla_nombre, columna_nombre, valor)
+
+    let check
+    if (dato != "buscador") {
+        valor += ` ORDER BY datos_calificacion DESC`
+        check = sql_result(tabla_nombre, columna_nombre, valor)
+    } else {
+        valor = `'${req.params.valor}%'`
+        check = sql_like(tabla_nombre, columna_nombre, valor)
+    }
+
     check.then(val => {
+
         if (val) {
             const a = { latitude: -34.70207407721391, longitude: -58.371419282884325 }
             let datos = []
@@ -209,7 +228,6 @@ async function prestadores_ver(req, res, next) {
                 const b = { latitude: gps[0], longitude: gps[1] }
                 const distancia = ((haversine(a, b)) / 1000).toString().slice(0, 4)
                 element.datos_gps = distancia
-
             });
             res.json(val)
         } else {
