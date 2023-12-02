@@ -91,9 +91,7 @@ async function geo_agregar(req, res, next) {
 }
 // ==================================== REQUEST ERROR =============================================
 function badRequest(err, req, res, next) {
-    res.status(404)
-    res.json({ message: err })
-    return new Error(err)
+    res.status(404).send({ msg: err });
 }
 // ==================================== ROL AGREGAR ===============================================
 app.post("/rol/agregar", rol_agregar, badRequest)
@@ -196,7 +194,7 @@ async function prestadores_ver(req, res, next) {
     tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
     tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
     switch (dato) {
-        case "prestador", "buscador":
+        case "buscador":
             columna_nombre = `tbl_servicios.servicios_nombre`
             break;
         case "horario":
@@ -205,6 +203,9 @@ async function prestadores_ver(req, res, next) {
         case "calificacion":
             valor = req.params.valor
             columna_nombre = `tbl_datos.datos_calificacion`
+            break;
+        case "prestador":
+            columna_nombre = `tbl_servicios.servicios_nombre`
             break;
     }
 
@@ -231,7 +232,7 @@ async function prestadores_ver(req, res, next) {
             });
             res.json(val)
         } else {
-            next(`No se encontro prestador.`)
+            next(`No hay servicios que coincidan con tu búsqueda`)
         }
     })
 }
