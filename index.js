@@ -151,7 +151,7 @@ async function sql_select(columna_dato, tabla_nombre, columna_nombre, valor) {
     if (resultado.length == 0) {
         return true
     } else {
-        return false
+        return resultado//false
     }
 }
 // ==================================== SQL SELECT * ================================================
@@ -257,6 +257,22 @@ async function usuario_agregar(req, res, next) {
             })
         } else {
             next(`Usuario ${correo} ya registrado.`)
+        }
+    })
+}
+// ==================================== TOKEN CHECK =========================================++++++
+app.post("/login", login, badRequest)
+async function login(req, res, next) {
+    usr_email = req.body.email
+    usr_password = req.body.password
+    valor = `'${usr_email}' AND usuario_pass = '${usr_password}'`
+    const check = sql_select('usuario_token', 'tbl_usuarios', 'usuario_correo', valor)
+    check.then(val => {
+        console.log(val)
+        if (val) {
+            res.json(val)
+        } else {
+            next(`Usuario no registrado.`)
         }
     })
 }
