@@ -149,7 +149,7 @@ async function sql_select(columna_dato, tabla_nombre, columna_nombre, valor) {
     const resultado = await sequelize.query(`SELECT ${columna_dato} FROM ${tabla_nombre} where ${columna_nombre} = ${valor};`,
         { type: QueryTypes.SELECT })
     if (resultado.length == 0) {
-        return true
+        return false
     } else {
         return resultado//false
     }
@@ -268,11 +268,10 @@ async function login(req, res, next) {
     valor = `'${usr_email}' AND usuario_pass = '${usr_password}'`
     const check = sql_select('usuario_token', 'tbl_usuarios', 'usuario_correo', valor)
     check.then(val => {
-        console.log(val)
         if (val) {
-            res.json(val)
+            res.json(val[0])
         } else {
-            next(`Usuario no registrado.`)
+            next(`Ingresaste un e‑mail o contraseña incorrectos.`)
         }
     })
 }
