@@ -1,11 +1,11 @@
 <div align="center">
   <h3 align="center">CAC + UTN Backend</h3>
   <p align="center">
-    ·
     <img src="https://img.shields.io/badge/Node.js-393?logo=nodedotjs&logoColor=fff&style=plastic" alt="Node.js Badge">
     ·
-    <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=fff&style=plastic" alt="MySQL Badge">
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff&style=plastic" alt="TypeScript Badge">
     ·
+    <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=fff&style=plastic" alt="MySQL Badge">
   </p>
 </div>
 
