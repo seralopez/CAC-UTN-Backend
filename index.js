@@ -266,7 +266,7 @@ async function login(req, res, next) {
     usr_email = req.body.email
     usr_password = req.body.password
     valor = `'${usr_email}' AND usuario_pass = '${usr_password}'`
-    const check = sql_select('usuario_token', 'tbl_usuarios', 'usuario_correo', valor)
+    const check = sql_select('usuario_token,usuario_nombre', 'tbl_usuarios', 'usuario_correo', valor)
     check.then(val => {
         if (val) {
             res.json(val[0])
