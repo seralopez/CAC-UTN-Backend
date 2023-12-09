@@ -129,7 +129,7 @@ async function servicio_agregar(req, res, next) {
 }
 // ==================================== SQL INSERT ================================================
 async function sql_insert(tabla_nombre, columna_nombre, valor) {
-    const [resul, meta] = await sequelize.query(`INSERT INTO ${tabla_nombre} (${columna_nombre}) VALUES (${valor})`,
+    const [resul, meta] = await sequelize.query(`INSERT INTO ${tabla_nombre} ${columna_nombre} VALUES ${valor}`,
         { type: QueryTypes.INSERT })
     return resul
 }
@@ -179,10 +179,12 @@ async function perfil_id(req, res, next) {
     const check = sql_result(tabla_nombre, 'usuario_id', `${valor}`)
     check.then(val => {
         if (val) {
-            delete val['usuario_pass']
+            delete val[0]['usuario_pass']
+            let date = new Date(val[0]['usuario_ultConec']);
+            val[0]['usuario_ultConec'] = date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
             res.json(val)
         } else {
-            next(`Servicio ${nombre} ya existe.`)
+            next(`Usuario no existe.`)
         }
     })
 }
@@ -234,6 +236,32 @@ async function prestadores_ver(req, res, next) {
         } else {
             next(`No hay servicios que coincidan con tu búsqueda`)
         }
+    })
+}
+// ==================================== TOKEN =====================================================
+app.get("/api/:valor", api_token, badRequest)
+async function api_token(req, res, next) {
+    valor = req.params.valor
+    tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
+    tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
+    const check = sql_result(tabla_nombre, 'usuario_token', `'${valor}'`)
+    check.then(val => {
+        if (val) {
+            delete val[0]['usuario_pass']
+            res.json(val)
+        } else {
+            next(`Usuario no existe.`)
+        }
+    })
+}
+// ==================================== TRABAJO INSERT ============================================
+app.post("/trabajo/nuevo", trabajo_insert, badRequest)
+async function trabajo_insert(req, res, next) {
+    tablas = (`trabajo_prestador`, `trabajo_usuario`, `trabajo_descripcion`, `trabajo_horario`, `trabajo_estado`, `trabajo_comentario`, `trabajo_medio`)
+    valores = (req.body.prestador, req.body.usuario, req.body.desc, req.body.horario, 'Consulta', req.body.comentario, req.body.medio)
+    const sql_insert_resultado = sql_insert(`tbl_trabajos`, tablas, valores)
+    sql_insert_resultado.then(valor => {
+        res.json({ msg: `Solicitud enviada!` })
     })
 }
 // ==================================== USUARIO AGREGAR ===========================================
