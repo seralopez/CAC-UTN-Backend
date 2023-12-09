@@ -242,17 +242,29 @@ async function prestadores_ver(req, res, next) {
 app.get("/api/:valor", api_token, badRequest)
 async function api_token(req, res, next) {
     valor = req.params.valor
-    tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
-    tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
-    const check = sql_result(tabla_nombre, 'usuario_token', `'${valor}'`)
-    check.then(val => {
-        if (val) {
-            delete val[0]['usuario_pass']
-            res.json(val)
-        } else {
-            next(`Usuario no existe.`)
-        }
-    })
+    if (valor == 'null') {
+        next(`No estas logueado.`)
+    } else {
+        tabla_nombre = `tbl_usuarios`
+        let check = sql_result(tabla_nombre, 'usuario_token', `'${valor}'`)
+        check.then(val => {
+            if (val[0]['usuario_rol'] == 3) {
+                tabla_nombre = `tbl_usuarios JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_usuarios.usuario_id`
+                tabla_nombre += ' JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id'
+                check = sql_result(tabla_nombre, 'usuario_token', `'${valor}'`)
+                check.then(val => {
+                    if (val) {
+                        delete val[0]['usuario_pass']
+                        res.json(val)
+                    } else {
+                        next(`Usuario no existe.`)
+                    }
+                })
+            } else {
+                res.json(val)
+            }
+        })
+    }
 }
 // ==================================== TRABAJO INSERT ============================================
 app.post("/trabajo/nuevo", trabajo_insert, badRequest)
