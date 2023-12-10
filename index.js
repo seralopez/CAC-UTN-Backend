@@ -245,7 +245,7 @@ async function api_token(req, res, next) {
     if (valor == 'null') {
         next(`No estas logueado.`)
     } else {
-        tabla_nombre = `tbl_usuarios`
+        tabla_nombre = `tbl_usuarios JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id`
         let check = sql_result(tabla_nombre, 'usuario_token', `'${valor}'`)
         check.then(val => {
             if (val[0]['usuario_rol'] == 3) {
@@ -269,11 +269,12 @@ async function api_token(req, res, next) {
 // ==================================== TRABAJO INSERT ============================================
 app.post("/trabajo/nuevo", trabajo_insert, badRequest)
 async function trabajo_insert(req, res, next) {
-    tablas = (`trabajo_prestador`, `trabajo_usuario`, `trabajo_descripcion`, `trabajo_horario`, `trabajo_estado`, `trabajo_comentario`, `trabajo_medio`)
-    valores = (req.body.prestador, req.body.usuario, req.body.desc, req.body.horario, 'Consulta', req.body.comentario, req.body.medio)
+    console.log(req)
+    tablas = "(`trabajo_prestador`, `trabajo_usuario`, `trabajo_descripcion`, `trabajo_horario`, `trabajo_estado`, `trabajo_comentario`)"
+    valores = `(${req.body.prestador},${req.body.usuario},'${req.body.trabajo}','${req.body.turno}', 'Consulta','${req.body.observacion}')`
     const sql_insert_resultado = sql_insert(`tbl_trabajos`, tablas, valores)
     sql_insert_resultado.then(valor => {
-        res.json({ msg: `Solicitud enviada!` })
+        res.json(`Solicitud enviada!`)
     })
 }
 // ==================================== USUARIO AGREGAR ===========================================
