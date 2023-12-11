@@ -273,11 +273,23 @@ async function trabajo_buscar(req, res, next) {
     tabla_nombre += ' JOIN tbl_trabajos on tbl_trabajos.trabajo_usuario = tbl_usuarios.usuario_id'
     check = sql_result(tabla_nombre, 'usuario_token', `'${req.body.token}'`)
     check.then(val => {
-
+        datos = {}
         if (val) {
             val.forEach(function callback(value, index) {
                 delete val[index]['usuario_pass']
+                check = sql_result('tbl_usuarios', 'usuario_id', `'${val[index]['prestador_usuario']}'`)
+                check.then(val2 => {
+                    if (val2) {
+                        val.forEach(function callback(value, index) {
+                            delete val[index]['usuario_pass']
+                        });
+                    }
+            })
+
             });
+
+
+
             res.json(val)
         } else {
             next(`No existen trabajos.`)
