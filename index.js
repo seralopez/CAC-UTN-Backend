@@ -266,15 +266,47 @@ async function api_token(req, res, next) {
         })
     }
 }
+// ==================================== TRABAJO BUSCAR ============================================
+app.post("/trabajos", trabajo_buscar, badRequest)
+async function trabajo_buscar(req, res, next) {
+    tabla_nombre = `tbl_usuarios JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id`
+    tabla_nombre += ' JOIN tbl_trabajos on tbl_trabajos.trabajo_usuario = tbl_usuarios.usuario_id'
+    check = sql_result(tabla_nombre, 'usuario_token', `'${req.body.token}'`)
+    check.then(val => {
+
+        if (val) {
+            val.forEach(function callback(value, index) {
+                delete val[index]['usuario_pass']
+            });
+            res.json(val)
+        } else {
+            next(`No existen trabajos.`)
+        }
+    })
+}
 // ==================================== TRABAJO INSERT ============================================
 app.post("/trabajo/nuevo", trabajo_insert, badRequest)
 async function trabajo_insert(req, res, next) {
-    console.log(req)
     tablas = "(`trabajo_prestador`, `trabajo_usuario`, `trabajo_descripcion`, `trabajo_horario`, `trabajo_estado`, `trabajo_comentario`)"
     valores = `(${req.body.prestador},${req.body.usuario},'${req.body.trabajo}','${req.body.turno}', 'Consulta','${req.body.observacion}')`
     const sql_insert_resultado = sql_insert(`tbl_trabajos`, tablas, valores)
     sql_insert_resultado.then(valor => {
         res.json(`Solicitud enviada!`)
+    })
+}
+// ==================================== TOKEN CHECK =========================================++++++
+app.post("/login", login, badRequest)
+async function login(req, res, next) {
+    usr_email = req.body.email
+    usr_password = req.body.password
+    valor = `'${usr_email}' AND usuario_pass = '${usr_password}'`
+    const check = sql_select('usuario_token,usuario_nombre', 'tbl_usuarios', 'usuario_correo', valor)
+    check.then(val => {
+        if (val) {
+            res.json(val[0])
+        } else {
+            next(`Ingresaste un e‑mail o contraseña incorrectos.`)
+        }
     })
 }
 // ==================================== USUARIO AGREGAR ===========================================
@@ -298,21 +330,6 @@ async function usuario_agregar(req, res, next) {
             })
         } else {
             next(`Usuario ${correo} ya registrado.`)
-        }
-    })
-}
-// ==================================== TOKEN CHECK =========================================++++++
-app.post("/login", login, badRequest)
-async function login(req, res, next) {
-    usr_email = req.body.email
-    usr_password = req.body.password
-    valor = `'${usr_email}' AND usuario_pass = '${usr_password}'`
-    const check = sql_select('usuario_token,usuario_nombre', 'tbl_usuarios', 'usuario_correo', valor)
-    check.then(val => {
-        if (val) {
-            res.json(val[0])
-        } else {
-            next(`Ingresaste un e‑mail o contraseña incorrectos.`)
         }
     })
 }
