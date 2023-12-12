@@ -269,31 +269,19 @@ async function api_token(req, res, next) {
 // ==================================== TRABAJO BUSCAR ============================================
 app.post("/trabajos", trabajo_buscar, badRequest)
 async function trabajo_buscar(req, res, next) {
+    let salida = []
+    let datos = {}
     tabla_nombre = `tbl_usuarios JOIN tbl_datos on tbl_datos.datos_id = tbl_usuarios.usuario_id`
     tabla_nombre += ' JOIN tbl_trabajos on tbl_trabajos.trabajo_usuario = tbl_usuarios.usuario_id'
+    tabla_nombre += ` JOIN tbl_servicios on tbl_servicios.servicios_usuario = tbl_trabajos.trabajo_prestador`
     check = sql_result(tabla_nombre, 'usuario_token', `'${req.body.token}'`)
     check.then(val => {
-        datos = {}
         if (val) {
             val.forEach(function callback(value, index) {
                 delete val[index]['usuario_pass']
-                check = sql_result('tbl_usuarios', 'usuario_id', `'${val[index]['prestador_usuario']}'`)
-                check.then(val2 => {
-                    if (val2) {
-                        val.forEach(function callback(value, index) {
-                            delete val[index]['usuario_pass']
-                        });
-                    }
-            })
-
             });
-
-
-
-            res.json(val)
-        } else {
-            next(`No existen trabajos.`)
         }
+        res.json(val)
     })
 }
 // ==================================== TRABAJO INSERT ============================================
